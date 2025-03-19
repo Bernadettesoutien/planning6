@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planning Bernadette 2025-2027</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+            text-align: center;
+            touch-action: manipulation; /* Améliore la réactivité tactile */
+        }
+        h1 {
+            color: #333;
+            font-size: 1.5em;
+        }
+        #monthSelector {
+            margin: 15px 0;
+        }
+        #calendar {
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+        .day {
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 100px; /* Plus grand pour faciliter le tap */
+            background-color: #f9f9f9;
+            cursor: pointer;
+            touch-action: none; /* Évite le zoom accidentel */
+        }
+        .day:active {
+            background-color: #e0e0e0; /* Feedback visuel au toucher */
+        }
+        .day-header {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        .slot {
+            font-size: 0.9em;
+            margin: 4px 0;
+            word-wrap: break-word;
+        }
+        #dayDetails {
+            display: none;
+            margin: 20px auto;
+            padding: 15px;
+            border: 1px solid #ccc;
+            width: 90%;
+            background-color: #fff;
+        }
+        button {
+            padding: 12px 25px; /* Boutons plus grands */
+            margin: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        button:active {
+            background-color: #0056b3; /* Feedback au toucher */
+        }
+        select, input {
+            width: 100%;
+            padding: 10px; /* Plus grand pour le tactile */
+            margin: 10px 0;
+            font-size: 1em;
+            border-radius: 5px;
+        }
+        @media (max-width: 600px) {
+            .day {
+                min-height: 120px; /* Encore plus grand sur petits écrans */
+            }
+            .slot {
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Planning pour Bernadette - 2025-2027</h1>
+    <p>Choisissez un mois et un jour pour vous inscrire (7h00 - 19h00).</p>
+
+    <div id="monthSelector">
+        <button onclick="changeMonth(-1)">Mois précédent</button>
+        <span id="currentMonth"></span>
+        <button onclick="changeMonth(1)">Mois suivant</button>
+    </div>
+
+    <div id="calendar"></div>
+
+    <div id="dayDetails">
+        <h2 id="selectedDay"></h2>
+        <input type="text" id="nameInput" placeholder="Entrez votre nom">
+        <select id="serviceSelect">
+            <option value="">Choisir un service</option>
+            <option value="Hôpital">Hôpital</option>
+            <option value="Laboratoire">Laboratoire</option>
+            <option value="Repas">Repas</option>
+            <option value="Ménage">Ménage</option>
+        </select>
+        <select id="hourSelect">
+            <option value="">Choisir un horaire</option>
+            <option value="7h00-7h30">7h00 - 7h30</option>
+            <option value="7h30-8h00">7h30 - 8h00</option>
+            <option value="8h00-8h30">8h00 - 8h30</option>
+            <option value="8h30-9h00">8h30 - 9h00</option>
+            <option value="9h00-9h30">9h00 - 9h30</option>
+            <option value="9h30-10h00">9h30 - 10h00</option>
+            <option value="10h00-10h30">10h00 - 10h30</option>
+            <option value="10h30-11h00">10h30 - 11h00</option>
+            <option value="11h00-11h30">11h00 - 11h30</option>
+            <option value="11h30-12h00">11h30 - 12h00</option>
+            <option value="12h00-12h30">12h00 - 12h30</option>
+            <option value="12h30-13h00">12h30 - 13h00</option>
+            <option value="13h00-13h30">13h00 - 13h30</option>
+            <option value="13h30-14h00">13h30 - 14h00</option>
+            <option value="14h00-14h30">14h00 - 14h30</option>
+            <option value="14h30-15h00">14h30 - 15h00</option>
+            <option value="15h00-15h30">15h00 - 15h30</option>
+            <option value="15h30-16h00">15h30 - 16h00</option>
+            <option value="16h00-16h30">16h00 - 16h30</option>
+            <option value="16h30-17h00">16h30 - 17h00</option>
+            <option value="17h00-17h30">17h00 - 17h30</option>
+            <option value="17h30-18h00">17h30 - 18h00</option>
+            <option value="18h00-18h30">18h00 - 18h30</option>
+            <option value="18h30-19h00">18h30 - 19h00</option>
+        </select>
+        <button onclick="saveSlot()">Valider</button>
+        <button onclick="closeDetails()">Retour</button>
+    </div>
+
+    <script>
+        const months = [
+            "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+            "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+        ];
+        const years = [2025, 2026, 2027];
+        const daysInMonth = {
+            2025: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+            2026: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+            2027: [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        };
+        let currentMonthIndex = 0;
+        let selectedDay = null;
+        let slots = {};
+
+        function renderCalendar() {
+            const calendar = document.getElementById("calendar");
+            const yearIndex = Math.floor(currentMonthIndex / 12);
+            const monthIndex = currentMonthIndex % 12;
+            const currentYear = years[yearIndex];
+            const currentMonth = months[monthIndex];
+            document.getElementById("currentMonth").textContent = `${currentMonth} ${currentYear}`;
+            calendar.innerHTML = "";
+
+            const weekdays = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+            weekdays.forEach(day => {
+                const dayDiv = document.createElement("div");
+                dayDiv.textContent = day;
+                dayDiv.style.fontWeight = "bold";
+                dayDiv.style.fontSize = "1em";
+                calendar.appendChild(dayDiv);
+            });
+
+            const firstDay = new Date(currentYear, monthIndex, 1).getDay();
+            const offset = firstDay === 0 ? 6 : firstDay - 1;
+
+            for (let i = 0; i < offset; i++) {
+                calendar.appendChild(document.createElement("div"));
+            }
+
+            for (let day = 1; day <= daysInMonth[currentYear][monthIndex]; day++) {
+                const dayDiv = document.createElement("div");
+                dayDiv.className = "day";
+                dayDiv.innerHTML = `<div class="day-header">${day}</div>`;
+                
+                const key = `${currentYear}-${monthIndex}-${day}`;
+                if (slots[key]) {
+                    slots[key].forEach(slot => {
+                        const slotDiv = document.createElement("div");
+                        slotDiv.className = "slot";
+                        slotDiv.textContent = `${slot.service} (${slot.hour}) : ${slot.name}`;
+                        dayDiv.appendChild(slotDiv);
+                    });
+                }
+
+                dayDiv.onclick = () => openDetails(day, currentYear, monthIndex);
+                calendar.appendChild(dayDiv);
+            }
+        }
+
+        function openDetails(day, year, month) {
+            selectedDay = { day, year, month };
+            document.getElementById("selectedDay").textContent = `Jour sélectionné : ${day} ${months[month]} ${year}`;
+            document.getElementById("dayDetails").style.display = "block";
+            document.getElementById("calendar").style.display = "none";
+            document.getElementById("monthSelector").style.display = "none";
+            document.getElementById("nameInput").value = "";
+            document.getElementById("serviceSelect").value = "";
+            document.getElementById("hourSelect").value = "";
+        }
+
+        function closeDetails() {
+            document.getElementById("dayDetails").style.display = "none";
+            document.getElementById("calendar").style.display = "grid";
+            document.getElementById("monthSelector").style.display = "block";
+            renderCalendar();
+        }
+
+        function saveSlot() {
+            const name = document.getElementById("nameInput").value;
+            const service = document.getElementById("serviceSelect").value;
+            const hour = document.getElementById("hourSelect").value;
+
+            if (name && service && hour) {
+                const key = `${selectedDay.year}-${selectedDay.month}-${selectedDay.day}`;
+                if (!slots[key]) slots[key] = [];
+                slots[key].push({ name, service, hour });
+                closeDetails();
+            } else {
+                alert("Veuillez remplir tous les champs.");
+            }
+        }
+
+        function changeMonth(delta) {
+            currentMonthIndex += delta;
+            if (currentMonthIndex < 0) currentMonthIndex = 35;
+            if (currentMonthIndex > 35) currentMonthIndex = 0;
+            renderCalendar();
+        }
+
+        renderCalendar();
+    </script>
+</body>
+</html>
